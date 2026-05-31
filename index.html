@@ -745,9 +745,9 @@ nav.scrolled { background: rgba(7,8,15,0.96); }
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  max-width: 900px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 1160px;
   margin: 0 auto;
   text-align: left;
 }
@@ -809,6 +809,11 @@ nav.scrolled { background: rgba(7,8,15,0.96); }
   font-size: 10px; font-weight: 800;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+}
+
+.plan-card.dimmed {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .plan-btn {
@@ -1050,7 +1055,7 @@ footer {
   .steps-grid::before { display: none; }
   .features-wrapper { grid-template-columns: 1fr; }
   .feature-card.featured { grid-column: span 1; grid-template-columns: 1fr; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 680px; }
   .testimonials-grid { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1fr 1fr; }
 
@@ -1066,6 +1071,7 @@ footer {
   .stat-item { border-top: 1px solid var(--border); padding: 28px 24px; }
   .footer-top { grid-template-columns: 1fr; gap: 32px; }
   .footer-bottom { flex-direction: column; text-align: center; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
 }
 
 /* ══════════════════════════════════════════
@@ -1452,36 +1458,59 @@ footer {
         <li>3 uploads per month</li>
         <li>Up to 200 rows per file</li>
         <li>Basic clean &amp; sort</li>
-        <li>Download results (.xlsx)</li>
+        <li>2 AI prompts per upload</li>
       </ul>
       <a href="#try" class="plan-btn outline">Get started free</a>
     </div>
 
+    <!-- Basic -->
+    <div class="plan-card reveal reveal-delay-1">
+      <div class="plan-name">Basic</div>
+      <div class="plan-price-wrap">
+        <div class="plan-currency">₹</div>
+        <div class="plan-price">999</div>
+        <div class="plan-per">/mo</div>
+      </div>
+      <div class="plan-period">billed monthly · cancel anytime</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>15 uploads per month</li>
+        <li>Up to 350 rows per file</li>
+        <li>Limited AI prompts</li>
+        <li>Formula generation</li>
+        <li>Limited AI Transforms</li>
+      </ul>
+      <a href="#try" class="plan-btn outline">Get Basic</a>
+    </div>
+
     <!-- Pro -->
-    <div class="plan-card popular reveal reveal-delay-1">
+    <div class="plan-card popular reveal reveal-delay-2">
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
       <div class="plan-price-wrap">
-        <div class="plan-price">Coming soon</div>
+        <div class="plan-currency">₹</div>
+        <div class="plan-price">1,999</div>
+        <div class="plan-per">/mo</div>
       </div>
-      <div class="plan-period">launch pricing announced soon</div>
+      <div class="plan-period">billed monthly · cancel anytime</div>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>50 uploads per month</li>
-        <li>Up to 20,000 rows per file</li>
+        <li>30 uploads per month</li>
+        <li>Up to 1,000 rows per file</li>
         <li>All AI transforms</li>
         <li>Formula generation</li>
         <li>Priority processing</li>
         <li>Email support</li>
       </ul>
-      <a href="#try" class="plan-btn filled">Join the waitlist</a>
+      <a href="#try" class="plan-btn filled">Get Pro</a>
     </div>
 
     <!-- Business -->
-    <div class="plan-card reveal reveal-delay-2">
+    <div class="plan-card reveal reveal-delay-3" style="opacity:0.6;pointer-events:none;">
+      <div class="plan-badge" style="background:var(--text-faint);box-shadow:none;">COMING SOON</div>
       <div class="plan-name">Business</div>
       <div class="plan-price-wrap">
-        <div class="plan-price">Coming soon</div>
+        <div class="plan-price" style="font-size:28px;letter-spacing:-1px;color:var(--text-muted);">Coming soon</div>
       </div>
       <div class="plan-period">for teams · talk to us</div>
       <div class="plan-divider"></div>
@@ -1493,7 +1522,7 @@ footer {
         <li>Priority queue</li>
         <li>Dedicated support</li>
       </ul>
-      <a href="mailto:hello@sheetforyou.com?subject=Business%20plan%20enquiry" class="plan-btn outline">Contact us</a>
+      <a href="mailto:hello@sheetforyou.com?subject=Business%20plan%20enquiry" class="plan-btn outline" style="pointer-events:none;opacity:0.5;">Contact us</a>
     </div>
   </div>
 </div>
@@ -1567,7 +1596,7 @@ footer {
         How large a file can I upload?
         <span class="faq-arrow" aria-hidden="true">▾</span>
       </button>
-      <div class="faq-a">Free plan supports files up to 200 rows. Pro plan handles up to 20,000 rows per file. Business plan supports unlimited rows. Maximum file size is 10 MB across all plans.</div>
+      <div class="faq-a">Free plan supports files up to 200 rows. Basic plan supports up to 350 rows per file. Pro plan handles up to 1,000 rows per file. Business plan supports unlimited rows. Maximum file size is 10 MB across all plans.</div>
     </div>
     <div class="faq-item">
       <button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">
