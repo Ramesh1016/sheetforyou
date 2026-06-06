@@ -1172,7 +1172,7 @@ footer {
   </p>
 
   <div class="hero-ctas">
-    <a href="#try" class="btn-primary">Try it free — no signup needed <span aria-hidden="true">⚡</span></a>
+    <a href="#try" class="btn-primary">Try it free <span aria-hidden="true">⚡</span></a>
     <a href="#how" class="btn-secondary">See how it works <span aria-hidden="true">→</span></a>
   </div>
 
@@ -1429,7 +1429,7 @@ footer {
 <div class="section try-section section--flush" id="try">
   <div class="section-label reveal">Live demo</div>
   <h2 class="section-title reveal">Try it right now</h2>
-  <p class="section-sub reveal">No account needed. Upload a file and see the magic for yourself.</p>
+  <p class="section-sub reveal">Free to start — sign up, then upload a file and see the magic for yourself.</p>
 
   <div class="reveal">
     <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload an Excel or CSV file">
@@ -1702,6 +1702,18 @@ footer {
 </footer>
 
 <!-- ══ JS ══ -->
+<!-- ══ SIGNUP GATE MODAL ══ -->
+<div id="sfyModal" role="dialog" aria-modal="true" aria-label="Sign up for SheetForYou" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(5,6,12,0.80);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg-2);border:1px solid var(--border-md);border-radius:var(--radius-xl);max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:var(--shadow-card);position:relative;padding:28px 26px;">
+    <button type="button" id="sfyModalClose" aria-label="Close" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:28px;line-height:1;cursor:pointer;">&times;</button>
+    <div style="font-family:var(--display-font);font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px;">Start free</div>
+    <p style="font-size:14.5px;color:var(--text-muted);margin:0 0 18px;line-height:1.5;">Sign up free to start transforming your spreadsheets — takes 20 seconds, no card needed.</p>
+    <iframe title="SheetForYou signup form" src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__cWNPmtUN0JMQ0hNNUtTUkJNU1lGWUhaUkhRMkcwSC4u&embed=true" style="width:100%;height:480px;border:1px solid var(--border);border-radius:var(--radius-md);background:#fff;" allow="fullscreen"></iframe>
+    <p style="font-size:12.5px;color:var(--text-faint);margin:10px 0 0;text-align:center;">Form not loading? <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__cWNPmtUN0JMQ0hNNUtTUkJNU1lGWUhaUkhRMkcwSC4u" target="_blank" rel="noopener" style="color:var(--teal);">Open it in a new tab ↗</a></p>
+    <button type="button" id="sfyContinue" class="btn-transform" style="width:100%;margin-top:16px;">I've signed up — continue to the tool →</button>
+  </div>
+</div>
+
 <script>
 /* Nav scroll */
 window.addEventListener('scroll', () => {
@@ -1808,6 +1820,7 @@ function setStatus(msg, kind) {
 document.querySelector('.btn-transform').addEventListener('click', runTransform);
 
 async function runTransform() {
+  if (!sfyHasSignedUp()) { openSignup(); return; }
   const btn = document.querySelector('.btn-transform');
   const instruction = document.getElementById('promptInput').value.trim();
 
@@ -1876,6 +1889,40 @@ function toggleFaq(el) {
     el.setAttribute('aria-expanded', 'true');
   }
 }
+
+/* ── Signup gate ───────────────────────────────────────────── */
+const SFY_KEY = 'sfy_signed_up';
+const sfyModal = document.getElementById('sfyModal');
+
+function sfyHasSignedUp() {
+  try { return localStorage.getItem(SFY_KEY) === 'yes'; } catch (e) { return false; }
+}
+function openSignup() {
+  sfyModal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeSignup() {
+  sfyModal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('sfyModalClose').addEventListener('click', closeSignup);
+sfyModal.addEventListener('click', e => { if (e.target === sfyModal) closeSignup(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && sfyModal.style.display === 'flex') closeSignup();
+});
+document.getElementById('sfyContinue').addEventListener('click', () => {
+  try { localStorage.setItem(SFY_KEY, 'yes'); } catch (e) {}
+  closeSignup();
+  const tryEl = document.getElementById('try');
+  if (tryEl) tryEl.scrollIntoView({ behavior: 'smooth' });
+});
+
+/* Every "Start free / Sign in / Get plan" CTA opens signup until they're in */
+document.querySelectorAll('a[href="#try"]').forEach(a => {
+  a.addEventListener('click', e => {
+    if (!sfyHasSignedUp()) { e.preventDefault(); openSignup(); }
+  });
+});
 </script>
 </body>
 </html>
