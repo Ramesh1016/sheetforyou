@@ -1265,7 +1265,7 @@ footer {
       <div class="step-number">02</div>
       <div class="step-icon" aria-hidden="true">💬</div>
       <div class="step-title">Describe what you need</div>
-      <div class="step-desc">Type in plain English: "Remove empty rows", "Calculate monthly totals", "Highlight overdue invoices", "Sort by date and add serial numbers" — anything.</div>
+      <div class="step-desc">Type in plain English: "Remove empty rows", "Total sales by region", "Split full names into first and last", "Sort by date and add serial numbers" — anything.</div>
     </div>
     <div class="step-card reveal reveal-delay-2">
       <div class="step-number">03</div>
@@ -1447,11 +1447,17 @@ footer {
     <div class="prompt-examples">
       <span class="example-chip" onclick="setPrompt(this)">Remove duplicates</span>
       <span class="example-chip" onclick="setPrompt(this)">Sort by revenue high to low</span>
-      <span class="example-chip" onclick="setPrompt(this)">Calculate monthly totals</span>
-      <span class="example-chip" onclick="setPrompt(this)">Highlight overdue invoices</span>
+      <span class="example-chip" onclick="setPrompt(this)">Total sales by region</span>
+      <span class="example-chip" onclick="setPrompt(this)">Make names proper case</span>
       <span class="example-chip" onclick="setPrompt(this)">Rank students by marks</span>
       <span class="example-chip" onclick="setPrompt(this)">Add serial numbers</span>
     </div>
+
+    <div id="tryResult" style="display:none;margin-top:20px;text-align:center;">
+      <a id="tryDownload" class="btn-transform" href="#" download="sheetforyou_result.xlsx" style="text-decoration:none;display:inline-block;">⬇ Download cleaned file</a>
+      <div id="tryApplied" style="margin-top:12px;font-size:12.5px;color:var(--text-muted);"></div>
+    </div>
+    <div id="tryStatus" style="margin-top:14px;font-size:14px;text-align:center;min-height:1.2em;color:var(--text-muted);"></div>
   </div>
 </div>
 
@@ -1732,6 +1738,8 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 /* Upload zone — drag & drop + click + keyboard, without destroying the input */
+const BACKEND_URL = 'https://web-production-23eae.up.railway.app';
+let selectedFile = null;
 const zone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadArrow = document.getElementById('uploadArrow');
@@ -1762,6 +1770,7 @@ function showFile(file) {
   uploadArrow.textContent = '✅';
   uploadText.textContent = file.name;
   uploadSub.textContent = 'Ready — type your instruction below, then press Transform';
+  selectedFile = file;
 }
 
 zone.addEventListener('dragover', e => {
@@ -1784,17 +1793,67 @@ fileInput.addEventListener('change', function() {
   if (this.files[0]) { showFile(this.files[0]); }
 });
 
-/* Transform button — demo only: no backend wired yet */
-document.querySelector('.btn-transform').addEventListener('click', () => {
-  const hasFile = fileInput.files.length > 0;
-  if (!hasFile) {
+/* Transform button — wired to the live backend */
+const tryStatusEl  = document.getElementById('tryStatus');
+const tryResultEl  = document.getElementById('tryResult');
+const tryAppliedEl = document.getElementById('tryApplied');
+const tryDownload  = document.getElementById('tryDownload');
+
+function setStatus(msg, kind) {
+  const colors = { ok: 'var(--teal)', warn: 'var(--orange-bright)', info: 'var(--text-muted)' };
+  tryStatusEl.textContent = msg;
+  tryStatusEl.style.color = colors[kind] || 'var(--text-muted)';
+}
+
+document.querySelector('.btn-transform').addEventListener('click', runTransform);
+
+async function runTransform() {
+  const btn = document.querySelector('.btn-transform');
+  const instruction = document.getElementById('promptInput').value.trim();
+
+  if (!selectedFile) {
     uploadArrow.textContent = '👆';
     uploadText.textContent = 'Add a file first';
     uploadSub.textContent = 'Drop or choose a .xlsx / .csv file to continue';
     return;
   }
-  alert('This is a preview of the interface. Connect your account to run real transforms.');
-});
+  if (!instruction) {
+    setStatus('Type an instruction first — e.g. "remove duplicates and sort by date".', 'warn');
+    document.getElementById('promptInput').focus();
+    return;
+  }
+
+  tryResultEl.style.display = 'none';
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Working…';
+  setStatus('Processing your file… this usually takes a few seconds.', 'info');
+
+  const form = new FormData();
+  form.append('file', selectedFile);
+  form.append('instruction', instruction);
+
+  try {
+    const res = await fetch(BACKEND_URL + '/transform', { method: 'POST', body: form });
+    if (!res.ok) {
+      let msg = 'Something went wrong (' + res.status + '). Please try again.';
+      try { const e = await res.json(); if (e && e.error) msg = e.error; } catch (_) {}
+      setStatus(msg, 'warn');
+      return;
+    }
+    const applied = res.headers.get('X-Operations-Applied');
+    const blob = await res.blob();
+    tryDownload.href = URL.createObjectURL(blob);
+    tryAppliedEl.textContent = applied ? ('What we did → ' + applied) : '';
+    tryResultEl.style.display = 'block';
+    setStatus('Done! Your cleaned file is ready to download.', 'ok');
+  } catch (err) {
+    setStatus('Network error — please check your connection and try again.', 'warn');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
 
 /* Example chips */
 function setPrompt(el) {
