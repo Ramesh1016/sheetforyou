@@ -1477,10 +1477,10 @@ footer {
       <div class="plan-period">forever · no card needed</div>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>3 uploads per month</li>
+        <li>1 free transform (then upgrade)</li>
         <li>Up to 1,000 rows per file</li>
         <li>Core clean, sort &amp; filter</li>
-        <li>1 instruction per upload</li>
+        <li>No card needed</li>
       </ul>
       <a href="#try" class="plan-btn outline">Get started free</a>
     </div>
@@ -1866,8 +1866,25 @@ async function runTransform() {
   form.append('file', selectedFile);
   form.append('instruction', instruction);
 
+  // attach the logged-in user's token so the backend can check their limit
+  const { data: sess } = await sb.auth.getSession();
+  const token = sess && sess.session ? sess.session.access_token : null;
+  if (!token) { btn.disabled = false; btn.textContent = label; openSignup(); return; }
+
   try {
-    const res = await fetch(BACKEND_URL + '/transform', { method: 'POST', body: form });
+    const res = await fetch(BACKEND_URL + '/transform', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: form
+    });
+    if (res.status === 402) {
+      let m = "You've used your free transform. Upgrade to keep going.";
+      try { const e = await res.json(); if (e && e.message) m = e.message; } catch (_) {}
+      setStatus(m, 'warn');
+      const p = document.getElementById('pricing');
+      if (p) p.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     if (!res.ok) {
       let msg = 'Something went wrong (' + res.status + '). Please try again.';
       try { const e = await res.json(); if (e && e.error) msg = e.error; } catch (_) {}
