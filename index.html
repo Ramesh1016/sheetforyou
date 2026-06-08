@@ -1501,7 +1501,7 @@ footer {
         <li>All 36 data operations</li>
         <li>Multiple instructions per file</li>
       </ul>
-      <a href="#try" class="plan-btn outline">Get Basic</a>
+      <a href="javascript:void(0)" onclick="subscribe('basic')" class="plan-btn outline">Get Basic</a>
     </div>
 
     <!-- Pro -->
@@ -1522,7 +1522,7 @@ footer {
         <li>Priority processing</li>
         <li>Email support</li>
       </ul>
-      <a href="#try" class="plan-btn filled">Get Pro</a>
+      <a href="javascript:void(0)" onclick="subscribe('pro')" class="plan-btn filled">Get Pro</a>
     </div>
 
     <!-- Business -->
@@ -1687,10 +1687,9 @@ footer {
     </div>
     <div class="footer-col">
       <h4>Legal</h4>
-      <a href="#">Privacy policy</a>
-      <a href="#">Terms of service</a>
-      <a href="#">Refund policy</a>
-      <a href="#">Cookie policy</a>
+      <a href="/privacy.html">Privacy policy</a>
+      <a href="/terms.html">Terms of service</a>
+      <a href="/refund.html">Refund &amp; cancellation</a>
     </div>
   </div>
   <div class="footer-bottom">
@@ -1729,6 +1728,7 @@ footer {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
 /* Nav scroll */
@@ -2035,6 +2035,44 @@ document.querySelectorAll('a[href="#try"]').forEach(a => {
     if (!sfyHasSignedUp()) { e.preventDefault(); openSignup(); }
   });
 });
+
+/* ── Subscriptions (Razorpay) ──────────────────────────────── */
+async function subscribe(plan) {
+  if (!sfyHasSignedUp()) { openSignup(); return; }
+  const { data: sess } = await sb.auth.getSession();
+  const token = sess && sess.session ? sess.session.access_token : null;
+  if (!token) { openSignup(); return; }
+
+  try {
+    const res = await fetch(BACKEND_URL + '/create-subscription', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: plan })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.subscription_id) {
+      alert(data.error || 'Could not start the subscription. Please try again.');
+      return;
+    }
+    const rzp = new Razorpay({
+      key: data.key_id,
+      subscription_id: data.subscription_id,
+      name: 'SheetForYou',
+      description: plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan — monthly',
+      theme: { color: '#FF5C00' },
+      prefill: { email: sfyUser ? sfyUser.email : '' },
+      handler: function () {
+        alert("Payment successful! Your plan is being activated — it'll be ready in a few seconds. Refresh the page if needed.");
+      }
+    });
+    rzp.on('payment.failed', function () {
+      alert('Payment failed or was cancelled. You have not been charged.');
+    });
+    rzp.open();
+  } catch (e) {
+    alert('Something went wrong starting the subscription. Please try again.');
+  }
+}
 </script>
 </body>
 </html>
