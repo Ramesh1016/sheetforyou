@@ -332,8 +332,17 @@ nav.scrolled { background: rgba(7,8,15,0.96); }
 
 .hero-note {
   font-size: 12.5px; color: var(--text-faint);
-  margin-bottom: 64px;
+  margin-bottom: 8px;
   animation: fadeUp 0.55s 0.32s ease both;
+}
+
+/* ── HERO TOOL (real upload, moved up) ── */
+.hero-tool {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 24px;
+  text-align: left;
+  animation: fadeUp 0.7s 0.4s ease both;
 }
 
 /* ── DEMO WIDGET ── */
@@ -1102,7 +1111,7 @@ footer {
     transition-duration: 0.001ms !important;
   }
   .reveal { opacity: 1 !important; transform: none !important; }
-  .hero-badge, .hero h1, .hero-sub, .hero-ctas, .hero-note, .demo-widget {
+  .hero-badge, .hero h1, .hero-sub, .hero-ctas, .hero-note, .demo-widget, .hero-tool {
     animation: none !important;
   }
 }
@@ -1171,61 +1180,37 @@ footer {
     No formulas. No coding. No confusion.
   </p>
 
-  <div class="hero-ctas">
-    <a href="#try" class="btn-primary">Try it free <span aria-hidden="true">⚡</span></a>
-    <a href="#how" class="btn-secondary">See how it works <span aria-hidden="true">→</span></a>
+  <!-- LIVE UPLOAD TOOL (moved into hero — real, working tool) -->
+  <div class="hero-tool" id="try">
+    <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload an Excel or CSV file">
+      <input type="file" id="fileInput" accept=".xlsx,.csv,.xls" style="display:none">
+      <span class="upload-arrow" id="uploadArrow" aria-hidden="true">📂</span>
+      <div class="upload-zone-text" id="uploadText">Drop your Excel or CSV file here</div>
+      <div class="upload-zone-sub" id="uploadSub">.xlsx · .xls · .csv supported &nbsp;·&nbsp; Max 10 MB</div>
+    </div>
+
+    <div class="prompt-row">
+      <input type="text" id="promptInput" placeholder='e.g. "Remove duplicates and sort by date descending"'>
+      <button class="btn-transform">Transform ⚡</button>
+    </div>
+
+    <div class="prompt-examples">
+      <span class="example-chip" onclick="setPrompt(this)">Remove duplicates</span>
+      <span class="example-chip" onclick="setPrompt(this)">Sort by revenue high to low</span>
+      <span class="example-chip" onclick="setPrompt(this)">Total sales by region</span>
+      <span class="example-chip" onclick="setPrompt(this)">Make names proper case</span>
+      <span class="example-chip" onclick="setPrompt(this)">Rank students by marks</span>
+      <span class="example-chip" onclick="setPrompt(this)">Add serial numbers</span>
+    </div>
+
+    <div id="tryResult" style="display:none;margin-top:20px;text-align:center;">
+      <a id="tryDownload" class="btn-transform" href="#" download="sheetforyou_result.xlsx" style="text-decoration:none;display:inline-block;">⬇ Download cleaned file</a>
+      <div id="tryApplied" style="margin-top:12px;font-size:12.5px;color:var(--text-muted);"></div>
+    </div>
+    <div id="tryStatus" style="margin-top:14px;font-size:14px;text-align:center;min-height:1.2em;color:var(--text-muted);"></div>
   </div>
 
   <p class="hero-note"><span aria-hidden="true">✓</span> No credit card &nbsp;·&nbsp; <span aria-hidden="true">✓</span> No install &nbsp;·&nbsp; <span aria-hidden="true">✓</span> Works with Excel, CSV &amp; Google Sheets exports</p>
-
-  <!-- DEMO WIDGET -->
-  <div class="demo-widget">
-    <div class="demo-widget-glow"></div>
-    <div class="demo-box">
-      <div class="demo-titlebar">
-        <div class="tb-dots">
-          <div class="tb-dot"></div>
-          <div class="tb-dot"></div>
-          <div class="tb-dot"></div>
-        </div>
-        <div class="tb-title">SheetForYou — AI Transform</div>
-      </div>
-      <div class="demo-body">
-        <!-- File -->
-        <div class="demo-file-chip">
-          <div class="xl-badge">XL</div>
-          <div class="file-meta">
-            <div class="file-name">sales_data_Q4_2024.xlsx</div>
-            <div class="file-info">1,847 rows · 12 columns · uploaded just now</div>
-          </div>
-          <div class="file-status">✓ Ready</div>
-        </div>
-        <!-- Prompt -->
-        <div class="demo-prompt-line">
-          <div class="prompt-avatar" aria-hidden="true">💬</div>
-          <div>
-            <div class="prompt-label">YOUR INSTRUCTION</div>
-            <div class="prompt-text">Remove duplicates, sort by revenue (high to low), and add a column showing each row's % of total monthly sales</div>
-          </div>
-        </div>
-        <!-- Result -->
-        <div class="demo-result-line">
-          <div class="result-icon" aria-hidden="true">✓</div>
-          <div style="flex:1">
-            <div class="result-label">AI RESULT — READY IN 4 SECONDS</div>
-            <div class="result-main">sales_data_Q4_cleaned.xlsx is ready to download</div>
-            <div class="result-sub">1,800 rows retained · 47 duplicates removed · Revenue column sorted · % column added</div>
-            <div class="result-tags">
-              <span class="rtag">✓ Duplicates removed</span>
-              <span class="rtag">✓ Sorted</span>
-              <span class="rtag">✓ % column added</span>
-              <span class="rtag">⬇ Download ready</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <!-- ══ STATS ══ -->
@@ -1425,42 +1410,6 @@ footer {
   </div>
 </div>
 
-<!-- ══ TRY IT LIVE ══ -->
-<div class="section try-section section--flush" id="try">
-  <div class="section-label reveal">Live demo</div>
-  <h2 class="section-title reveal">Try it right now</h2>
-  <p class="section-sub reveal">Free to start — sign up, then upload a file and see the magic for yourself.</p>
-
-  <div class="reveal">
-    <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload an Excel or CSV file">
-      <input type="file" id="fileInput" accept=".xlsx,.csv,.xls" style="display:none">
-      <span class="upload-arrow" id="uploadArrow" aria-hidden="true">📂</span>
-      <div class="upload-zone-text" id="uploadText">Drop your Excel or CSV file here</div>
-      <div class="upload-zone-sub" id="uploadSub">.xlsx · .xls · .csv supported &nbsp;·&nbsp; Max 10 MB</div>
-    </div>
-
-    <div class="prompt-row">
-      <input type="text" id="promptInput" placeholder='e.g. "Remove duplicates and sort by date descending"'>
-      <button class="btn-transform">Transform ⚡</button>
-    </div>
-
-    <div class="prompt-examples">
-      <span class="example-chip" onclick="setPrompt(this)">Remove duplicates</span>
-      <span class="example-chip" onclick="setPrompt(this)">Sort by revenue high to low</span>
-      <span class="example-chip" onclick="setPrompt(this)">Total sales by region</span>
-      <span class="example-chip" onclick="setPrompt(this)">Make names proper case</span>
-      <span class="example-chip" onclick="setPrompt(this)">Rank students by marks</span>
-      <span class="example-chip" onclick="setPrompt(this)">Add serial numbers</span>
-    </div>
-
-    <div id="tryResult" style="display:none;margin-top:20px;text-align:center;">
-      <a id="tryDownload" class="btn-transform" href="#" download="sheetforyou_result.xlsx" style="text-decoration:none;display:inline-block;">⬇ Download cleaned file</a>
-      <div id="tryApplied" style="margin-top:12px;font-size:12.5px;color:var(--text-muted);"></div>
-    </div>
-    <div id="tryStatus" style="margin-top:14px;font-size:14px;text-align:center;min-height:1.2em;color:var(--text-muted);"></div>
-  </div>
-</div>
-
 <!-- ══ PRICING ══ -->
 <div class="section pricing-section" id="pricing">
   <div class="section-label reveal" style="display:inline-flex">Pricing</div>
@@ -1616,7 +1565,7 @@ footer {
         How large a file can I upload?
         <span class="faq-arrow" aria-hidden="true">▾</span>
       </button>
-      <div class="faq-a">Free plan supports files up to 200 rows. Basic plan supports up to 350 rows per file. Pro plan handles up to 1,000 rows per file. Business plan supports unlimited rows. Maximum file size is 10 MB across all plans.</div>
+      <div class="faq-a">Free plan supports files up to 1,000 rows. Basic plan supports up to 5,000 rows per file. Pro plan handles up to 25,000 rows per file. Business plan supports unlimited rows. Maximum file size is 10 MB across all plans.</div>
     </div>
     <div class="faq-item">
       <button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">
