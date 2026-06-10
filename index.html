@@ -2023,5 +2023,118 @@ async function subscribe(plan) {
   }
 }
 </script>
+
+<!-- ══ SUPPORT CHAT WIDGET (Claude-powered) ══ -->
+<style>
+  #sfyChatBtn{position:fixed;bottom:22px;right:22px;z-index:9990;width:58px;height:58px;border-radius:50%;background:var(--orange);color:#fff;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(255,92,0,0.45);transition:transform .2s,background .2s;}
+  #sfyChatBtn:hover{background:var(--orange-bright);transform:translateY(-2px);}
+  #sfyChatPanel{position:fixed;bottom:90px;right:22px;z-index:9990;width:360px;max-width:calc(100vw - 32px);height:480px;max-height:calc(100vh - 130px);background:var(--bg-2);border:1px solid var(--border-md);border-radius:var(--radius-xl);box-shadow:var(--shadow-card);display:none;flex-direction:column;overflow:hidden;}
+  #sfyChatPanel.open{display:flex;}
+  .sfy-chat-head{padding:16px 18px;border-bottom:1px solid var(--border-md);display:flex;align-items:center;gap:10px;}
+  .sfy-chat-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);}
+  .sfy-chat-head .t{font-family:var(--display-font);font-weight:700;font-size:15px;color:var(--text);}
+  .sfy-chat-head .s{font-size:11.5px;color:var(--text-muted);}
+  .sfy-chat-head .x{margin-left:auto;background:none;border:none;color:var(--text-muted);font-size:24px;line-height:1;cursor:pointer;}
+  .sfy-chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .sfy-msg{max-width:85%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;}
+  .sfy-msg.bot{align-self:flex-start;background:var(--bg-3);color:var(--text);border-bottom-left-radius:4px;}
+  .sfy-msg.user{align-self:flex-end;background:var(--orange);color:#fff;border-bottom-right-radius:4px;}
+  .sfy-typing{align-self:flex-start;color:var(--text-muted);font-size:13px;padding:4px 2px;}
+  .sfy-chat-foot{border-top:1px solid var(--border-md);padding:10px;display:flex;gap:8px;align-items:center;}
+  .sfy-chat-foot input{flex:1;background:var(--bg-3);border:1px solid var(--border-md);border-radius:var(--radius-md);color:var(--text);font-family:var(--body-font);font-size:13.5px;padding:10px 12px;outline:none;}
+  .sfy-chat-foot input::placeholder{color:var(--text-faint);}
+  .sfy-chat-foot button{background:var(--orange);color:#fff;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:18px;width:40px;height:40px;flex-shrink:0;}
+  .sfy-chat-foot button:disabled{opacity:.5;cursor:default;}
+</style>
+
+<button id="sfyChatBtn" aria-label="Open help chat" title="Need help?">💬</button>
+<div id="sfyChatPanel" role="dialog" aria-label="SheetForYou help chat">
+  <div class="sfy-chat-head">
+    <span class="dot" aria-hidden="true"></span>
+    <div>
+      <div class="t">SheetForYou Help</div>
+      <div class="s">Ask about the tool — replies in seconds</div>
+    </div>
+    <button class="x" id="sfyChatClose" aria-label="Close chat">&times;</button>
+  </div>
+  <div class="sfy-chat-body" id="sfyChatBody"></div>
+  <div class="sfy-chat-foot">
+    <input type="text" id="sfyChatInput" placeholder="Type your question…" autocomplete="off" maxlength="1000">
+    <button id="sfyChatSend" aria-label="Send">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var API = 'https://web-production-23eae.up.railway.app/support-chat';
+  var GREETING = "Hi! 👋 I'm the SheetForYou assistant. Ask me anything about uploading files, what transformations are possible, or how to phrase an instruction. For billing or refund questions I'll point you to our team.";
+  var btn   = document.getElementById('sfyChatBtn');
+  var panel = document.getElementById('sfyChatPanel');
+  var close = document.getElementById('sfyChatClose');
+  var body  = document.getElementById('sfyChatBody');
+  var input = document.getElementById('sfyChatInput');
+  var send  = document.getElementById('sfyChatSend');
+  var history = [];
+  var started = false;
+  var busy = false;
+
+  function addMsg(role, text){
+    var d = document.createElement('div');
+    d.className = 'sfy-msg ' + (role === 'user' ? 'user' : 'bot');
+    d.textContent = text;
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+  }
+  function openPanel(){
+    panel.classList.add('open');
+    if(!started){ addMsg('bot', GREETING); started = true; }
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+  function closePanel(){ panel.classList.remove('open'); }
+
+  btn.addEventListener('click', function(){
+    panel.classList.contains('open') ? closePanel() : openPanel();
+  });
+  close.addEventListener('click', closePanel);
+
+  async function sendMsg(){
+    var text = input.value.trim();
+    if(!text || busy) return;
+    busy = true; send.disabled = true;
+    addMsg('user', text);
+    history.push({ role:'user', content:text });
+    input.value = '';
+
+    var typing = document.createElement('div');
+    typing.className = 'sfy-typing';
+    typing.textContent = 'typing…';
+    body.appendChild(typing);
+    body.scrollTop = body.scrollHeight;
+
+    try{
+      var res = await fetch(API, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ messages: history })
+      });
+      var data = await res.json();
+      var reply = (data && data.reply) ? data.reply : "Sorry, something went wrong. Please email support@sheetforyou.com.";
+      typing.remove();
+      addMsg('bot', reply);
+      history.push({ role:'assistant', content:reply });
+    }catch(e){
+      typing.remove();
+      addMsg('bot', "I couldn't reach our assistant just now. Please email support@sheetforyou.com and we'll reply within 24 hours.");
+    }
+    busy = false; send.disabled = false;
+    input.focus();
+  }
+
+  send.addEventListener('click', sendMsg);
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); sendMsg(); }
+  });
+})();
+</script>
 </body>
 </html>
