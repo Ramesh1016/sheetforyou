@@ -1141,8 +1141,9 @@ footer {
   </div>
 
   <div class="nav-right">
-    <a href="#try" class="btn-nav-ghost">Sign in</a>
-    <a href="#try" class="btn-nav-primary">Start free <span aria-hidden="true">→</span></a>
+    <button id="navAccount" class="btn-nav-ghost" style="display:none;" aria-label="Your account"><span id="navPlanBadge">Free</span></button>
+    <a href="#try" id="navSignIn" class="btn-nav-ghost">Sign in</a>
+    <a href="#try" id="navStartFree" class="btn-nav-primary">Start free <span aria-hidden="true">→</span></a>
     <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
       <span></span><span></span><span></span>
     </button>
@@ -1202,6 +1203,8 @@ footer {
       <span class="example-chip" onclick="setPrompt(this)">Rank students by marks</span>
       <span class="example-chip" onclick="setPrompt(this)">Add serial numbers</span>
     </div>
+
+    <div id="usageNote" style="display:none;margin-top:14px;font-size:13px;font-weight:600;text-align:center;color:var(--teal);"></div>
 
     <div id="tryResult" style="display:none;margin-top:20px;text-align:center;">
       <a id="tryDownload" class="btn-transform" href="#" download="sheetforyou_result.xlsx" style="text-decoration:none;display:inline-block;">⬇ Download cleaned file</a>
@@ -1431,7 +1434,7 @@ footer {
         <li>Core clean, sort &amp; filter</li>
         <li>No card needed</li>
       </ul>
-      <a href="#try" class="plan-btn outline">Get started free</a>
+      <a href="#try" id="planBtnFree" class="plan-btn outline">Get started free</a>
     </div>
 
     <!-- Basic -->
@@ -1450,7 +1453,7 @@ footer {
         <li>All 36 data operations</li>
         <li>Multiple instructions per file</li>
       </ul>
-      <a href="javascript:void(0)" onclick="subscribe('basic')" class="plan-btn outline">Get Basic</a>
+      <a href="javascript:void(0)" id="planBtnBasic" onclick="subscribe('basic')" class="plan-btn outline">Get Basic</a>
     </div>
 
     <!-- Pro -->
@@ -1471,7 +1474,7 @@ footer {
         <li>Priority processing</li>
         <li>Email support</li>
       </ul>
-      <a href="javascript:void(0)" onclick="subscribe('pro')" class="plan-btn filled">Get Pro</a>
+      <a href="javascript:void(0)" id="planBtnPro" onclick="subscribe('pro')" class="plan-btn filled">Get Pro</a>
     </div>
 
     <!-- Business -->
@@ -1846,6 +1849,7 @@ async function runTransform() {
     tryAppliedEl.textContent = applied ? ('What we did → ' + applied) : '';
     tryResultEl.style.display = 'block';
     setStatus('Done! Your cleaned file is ready to download.', 'ok');
+    sfyRefreshStatus();
   } catch (err) {
     setStatus('Network error — please check your connection and try again.', 'warn');
   } finally {
@@ -1973,9 +1977,11 @@ document.addEventListener('keydown', e => {
 sb.auth.onAuthStateChange((event, session) => {
   sfyUser = session ? session.user : null;
   if (sfyModal.style.display === 'flex') renderAuth();
+  sfyRefreshStatus();
 });
 sb.auth.getSession().then(({ data }) => {
   sfyUser = data.session ? data.session.user : null;
+  sfyRefreshStatus();
 });
 
 /* Every "Start free / Sign in / Get plan" CTA opens the login popup first */
@@ -2011,7 +2017,8 @@ async function subscribe(plan) {
       theme: { color: '#FF5C00' },
       prefill: { email: sfyUser ? sfyUser.email : '' },
       handler: function () {
-        alert("Payment successful! Your plan is being activated — it'll be ready in a few seconds. Refresh the page if needed.");
+        alert("Payment successful! Your plan is being activated — it'll update on the page in a few seconds.");
+        sfyPollStatus();
       }
     });
     rzp.on('payment.failed', function () {
@@ -2022,6 +2029,88 @@ async function subscribe(plan) {
     alert('Something went wrong starting the subscription. Please try again.');
   }
 }
+
+/* ── Account status: plan badge, transforms left, current-plan marking ── */
+let sfyStatus = null;
+
+async function sfyGetToken() {
+  const { data: sess } = await sb.auth.getSession();
+  return sess && sess.session ? sess.session.access_token : null;
+}
+
+function sfyResetPlanButtons() {
+  const f = document.getElementById('planBtnFree');
+  const b = document.getElementById('planBtnBasic');
+  const p = document.getElementById('planBtnPro');
+  if (f) { f.textContent = 'Get started free'; f.style.pointerEvents = ''; f.style.opacity = ''; }
+  if (b) { b.textContent = 'Get Basic'; b.style.pointerEvents = ''; b.style.opacity = ''; }
+  if (p) { p.textContent = 'Get Pro'; p.style.pointerEvents = ''; p.style.opacity = ''; }
+}
+
+function sfyApplyStatus(s) {
+  const account   = document.getElementById('navAccount');
+  const badge     = document.getElementById('navPlanBadge');
+  const signIn    = document.getElementById('navSignIn');
+  const startFree = document.getElementById('navStartFree');
+  const note      = document.getElementById('usageNote');
+
+  sfyResetPlanButtons();
+
+  if (!s || !sfyUser) {
+    if (account)   account.style.display = 'none';
+    if (signIn)    signIn.style.display = '';
+    if (startFree) startFree.style.display = '';
+    if (note)      note.style.display = 'none';
+    return;
+  }
+
+  const plan  = s.plan || 'free';
+  const label = plan.charAt(0).toUpperCase() + plan.slice(1);
+  if (badge)     badge.textContent = label + ' plan';
+  if (account)   account.style.display = '';
+  if (signIn)    signIn.style.display = 'none';
+  if (startFree) startFree.style.display = 'none';
+
+  const remaining = (typeof s.remaining === 'number') ? s.remaining : Math.max(0, (s.limit || 0) - (s.used || 0));
+  if (note) {
+    if (plan === 'free') {
+      if (remaining > 0) { note.textContent = '✓ ' + remaining + ' free transform' + (remaining === 1 ? '' : 's') + ' left'; note.style.color = 'var(--teal)'; }
+      else { note.textContent = 'Free transform used — upgrade to keep going'; note.style.color = 'var(--orange-bright)'; }
+    } else {
+      note.textContent = remaining + ' of ' + s.limit + ' transforms left this month';
+      note.style.color = remaining > 0 ? 'var(--teal)' : 'var(--orange-bright)';
+    }
+    note.style.display = '';
+  }
+
+  const cur = document.getElementById('planBtn' + label);
+  if (cur) { cur.textContent = '✓ Current plan'; cur.style.pointerEvents = 'none'; cur.style.opacity = '0.6'; }
+}
+
+async function sfyRefreshStatus() {
+  if (!sfyUser) { sfyApplyStatus(null); return; }
+  try {
+    const token = await sfyGetToken();
+    if (!token) { sfyApplyStatus(null); return; }
+    const res = await fetch(BACKEND_URL + '/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) { sfyApplyStatus(null); return; }
+    sfyStatus = await res.json();
+    sfyApplyStatus(sfyStatus);
+  } catch (e) {
+    sfyApplyStatus(null);
+  }
+}
+
+/* After a payment, the webhook takes a few seconds — poll a few times */
+function sfyPollStatus() {
+  [3000, 7000, 12000].forEach(ms => setTimeout(sfyRefreshStatus, ms));
+}
+
+/* Clicking the plan badge opens the account box (email + log out) */
+(function () {
+  const acc = document.getElementById('navAccount');
+  if (acc) acc.addEventListener('click', openSignup);
+})();
 </script>
 
 <!-- ══ SUPPORT CHAT WIDGET (Claude-powered) ══ -->
