@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — SheetForYou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07080F;--bg-2:#0D0F1C;--border:rgba(255,255,255,0.09);
+    --text:#DDE2EF;--text-muted:rgba(221,226,239,0.66);--text-faint:rgba(221,226,239,0.46);
+    --orange:#FF5C00;--orange-bright:#FF7A2E;--teal:#00D4AA;
+    --display:'Bricolage Grotesque',sans-serif;--body:'Instrument Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.72;font-size:15.5px;-webkit-font-smoothing:antialiased;}
+  a{color:var(--orange);text-decoration:none;}
+  a:hover{color:var(--orange-bright);text-decoration:underline;}
+  .topbar{border-bottom:1px solid var(--border);padding:16px 24px;}
+  .topbar .wrap{max-width:820px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:19px;color:var(--text);}
+  .logo:hover{text-decoration:none;}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;}
+  .logo .mark svg{width:18px;height:18px;}
+  .logo .ft{color:var(--orange);}
+  .back{font-size:13.5px;color:var(--text-muted);}
+  main{max-width:820px;margin:0 auto;padding:46px 24px 60px;}
+  h1{font-family:var(--display);font-weight:800;font-size:34px;line-height:1.15;margin-bottom:8px;letter-spacing:-0.5px;color:#fff;}
+  .updated{color:var(--text-faint);font-size:13px;margin-bottom:34px;}
+  h2{font-family:var(--display);font-weight:700;font-size:20px;margin:34px 0 10px;color:var(--text);}
+  p{color:var(--text-muted);margin-bottom:14px;}
+  ul{color:var(--text-muted);margin:0 0 14px 22px;}
+  li{margin-bottom:7px;}
+  strong{color:var(--text);font-weight:600;}
+  .lead{font-size:16.5px;color:var(--text);margin-bottom:18px;}
+  .box{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin:18px 0;}
+  .pagefoot{border-top:1px solid var(--border);max-width:820px;margin:0 auto;padding:22px 24px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;color:var(--text-faint);font-size:12.5px;}
+  .pagefoot a{color:var(--text-muted);}
+  .pagefoot .links{display:flex;gap:16px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap"><a class="logo" href="/"><span class="mark"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="#fff"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="#fff"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="#fff"/><path d="M14 17.5h7M17.5 14v7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></span><span>Sheet<span class="ft">ForYou</span></span></a><a class="back" href="/">&larr; Back to SheetForYou</a></div></div>
+<main>
+<h1>About SheetForYou</h1>
+<div class="updated">Last updated: 13 June 2026</div>
+
+<p class="lead">SheetForYou turns spreadsheet work that used to take hours into something you finish in seconds — just by typing what you want in plain English.</p>
+
+<p>Cleaning data, removing duplicates, sorting, splitting names, summarising sales by region, fixing dates — these are the small, repetitive jobs that eat into the day of every accountant, HR executive, teacher and business owner who lives in Excel. SheetForYou was built on a simple idea: you shouldn't need to know formulas, macros or coding to get them done. You upload your Excel or CSV file, describe what you need in everyday language, and download the transformed file. That's it.</p>
+
+<h2>The brain behind it</h2>
+<p>SheetForYou is built and run by <strong>Ramesh Selvaraj</strong>, based in Coimbatore, Tamil Nadu. It started from a frustration shared by so many professionals in India — that everyday spreadsheet tasks are far harder than they should be — and a belief that good software can quietly remove that friction. Every part of the product, from the transformation engine to the support you receive, is shaped with that goal in mind.</p>
+
+<h2>How it works, briefly</h2>
+<p>You give an instruction; an AI reads only your column names and a few sample rows to decide which operations to apply; then trusted code runs those operations on your file and hands it back. Your full dataset is processed to produce your result and is not stored after the transformation is complete. You can read more in our <a href="/privacy.html">Privacy Policy</a>.</p>
+
+<h2>Get in touch</h2>
+<p>Questions, feedback, or an idea for a feature you wish existed? Write to <a href="mailto:support@sheetforyou.com">support@sheetforyou.com</a> — every message reaches Ramesh directly, and we aim to reply within 24 hours.</p>
+
+</main>
+<div class="pagefoot"><div>&copy; 2026 SheetForYou &middot; Ramesh Selvaraj</div><div class="links"><a href="/">Home</a><a href="/about.html">About</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refund</a><a href="mailto:support@sheetforyou.com">support@sheetforyou.com</a></div></div>
+</body>
+</html>
